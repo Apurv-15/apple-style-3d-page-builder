@@ -13,4 +13,5 @@ export const blink = createClient({
   projectId: getProjectId(),
   publishableKey: import.meta.env.VITE_BLINK_PUBLISHABLE_KEY,
   auth: { mode: 'managed' },
+  authRequired: false, // Skip auth requirement for DB operations
 });
