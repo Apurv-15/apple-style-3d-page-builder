@@ -6,12 +6,25 @@ import { Plus, Folder, Clock, ChevronRight, Layout } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated, login, logout } = useAuth();
   const [projects, setProjects] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const navigate = useNavigate();
 
+  // Redirect to login if not authenticated after auth check completes
   React.useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      login();
+    }
+  }, [authLoading, isAuthenticated, login]);
+
+  // Load projects only when authenticated
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      setIsLoading(false);
+      return;
+    }
+    
     const loadProjects = async () => {
       try {
         const list = await projectService.listProjects();
@@ -23,7 +36,31 @@ export default function DashboardPage() {
       }
     };
     loadProjects();
-  }, []);
+  }, [isAuthenticated]);
+
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground font-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show nothing while redirecting to login
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground font-medium">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleCreateProject = async () => {
     const name = prompt('Enter project name:', 'New Immersive Site');
