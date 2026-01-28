@@ -13,7 +13,7 @@ export const projectService = {
     if (!project) return null;
 
     const pages = await blink.db.pages.list({
-      where: { project_id: id },
+      where: { projectId: id },
       orderBy: { order: 'asc' }
     });
 
@@ -30,37 +30,37 @@ export const projectService = {
   },
 
   async savePage(projectId: string, page: PageData) {
-    const { user } = await blink.auth.me();
+    const user = await blink.auth.me();
     if (!user) return;
 
     await blink.db.pages.upsert({
       id: page.id,
-      project_id: projectId,
+      projectId: projectId,
       name: page.name,
       path: page.path,
       content: JSON.stringify(page.components),
-      user_id: user.id
+      userId: user.id
     });
   },
 
   async createProject(name: string) {
-    const { user } = await blink.auth.me();
+    const user = await blink.auth.me();
     if (!user) return null;
 
     const project = await blink.db.projects.create({
       name,
-      user_id: user.id
+      userId: user.id
     });
 
     // Create default home page
     const pageId = `page_${Math.random().toString(36).substr(2, 9)}`;
     await blink.db.pages.create({
       id: pageId,
-      project_id: project.id,
+      projectId: project.id,
       name: 'Home',
       path: '/',
       content: '[]',
-      user_id: user.id
+      userId: user.id
     });
 
     return project;
